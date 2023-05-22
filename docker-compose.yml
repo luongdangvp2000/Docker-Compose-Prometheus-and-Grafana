@@ -27,56 +27,56 @@ volumes:
 
 
 services:
-  # vss-minio:
-  #   container_name: minio
-  #   image: "docker.io/bitnami/minio:2023.1.31-debian-11-r0"
-  #   restart: always
-  #   ports:
-  #     - "10010:9000"
-  #     - "10011:9001"
-  #   volumes:
-  #     - vss_minio:/data
-  #   environment:
-  #     MINIO_ROOT_USER: "admin"
-  #     MINIO_ROOT_PASSWORD: "123456a@"
-  #     MINIO_PROMETHEUS_AUTH_TYPE: public
-  #   networks:
-  #     - monitor-net
-  #   labels:
-  #     org.label-schema.group: "monitoring"
+  vss-minio:
+    container_name: minio
+    image: "docker.io/bitnami/minio:2023.1.31-debian-11-r0"
+    restart: always
+    ports:
+      - "10010:9000"
+      - "10011:9001"
+    volumes:
+      - vss_minio:/data
+    environment:
+      MINIO_ROOT_USER: "admin"
+      MINIO_ROOT_PASSWORD: "123456a@"
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
 
-  # vss_redis:
-  #   image: "docker.io/bitnami/redis:7.0.8-debian-11-r0"
-  #   container_name: "redis"
-  #   restart: always
-  #   ports:
-  #     - "6379:6379"
-  #   environment:
-  #     REDIS_PASSWORD: "123456a@"
-  #   volumes:
-  #     - vss_redis:/bitnami/redis/data
-  #   networks:
-  #     - monitor-net
-  #   labels:
-  #     org.label-schema.group: "monitoring"
+  vss_redis:
+    image: "docker.io/bitnami/redis:7.0.8-debian-11-r0"
+    container_name: "redis"
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: "123456a@"
+    volumes:
+      - vss_redis:/bitnami/redis/data
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
 
-  # redis-exporter:
-  #   image: "bitnami/redis-exporter:1.45.0-debian-11-r26"
-  #   container_name: "redis-exporter"
-  #   ports:
-  #     - 9121:9121
-  #   restart: always
-  #   environment:
-  #     REDIS_ADDR: "redis:6379"
-  #     # REDIS_USER: null
-  #     REDIS_PASSWORD: "123456a@"
-  #   links:
-  #     - vss_redis
-  #     - prometheus
-  #   networks:
-  #     - monitor-net
-  #   labels:
-  #     org.label-schema.group: "monitoring"
+  redis-exporter:
+    image: "bitnami/redis-exporter:1.45.0-debian-11-r26"
+    container_name: "redis-exporter"
+    ports:
+      - 9121:9121
+    restart: always
+    environment:
+      REDIS_ADDR: "redis:6379"
+      # REDIS_USER: null
+      REDIS_PASSWORD: "123456a@"
+    links:
+      - vss_redis
+      - prometheus
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
 
   vss_mongodb:
     image: "docker.io/bitnami/mongodb:6.0.4-debian-11-r0"
@@ -102,16 +102,9 @@ services:
       - 9216:9216
     restart: always
     command:
-      # - '--./mongodb_exporter' 
       - '--mongodb.uri=mongodb://root:123456a%40@mongodb:27017'
       - '--collect-all'
       - '--no-mongodb.direct-connect'
-    # environment:
-    #   MONGODB_ADDR: "mongodb:11111"
-      # MONGODB_ROOT_USER: "root"
-      # MONGODB_ROOT_PASSWORD: "123456a@"
-      # MONGODB_URI: "mongodb://root:123456a%40@localhost:27017"
-    #   HTTP_AUTH: "root:123456a%40"
     links:
       - vss_mongodb
       - prometheus
@@ -141,41 +134,41 @@ services:
     labels:
       org.label-schema.group: "monitoring"
 
-  # alertmanager:
-  #   image: quay.io/prometheus/alertmanager:v0.25.0
-  #   container_name: alertmanager
-  #   volumes:
-  #     - ./alertmanager:/etc/alertmanager
-  #   command:
-  #     - '--config.file=/etc/alertmanager/config.yml'
-  #     - '--storage.path=/alertmanager'
-  #   restart: always
-  #   ports:
-  #     - "9093:9093"
-  #   networks:
-  #     - monitor-net
-  #   labels:
-  #     org.label-schema.group: "monitoring"
+  alertmanager:
+    image: quay.io/prometheus/alertmanager:v0.25.0
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    restart: always
+    ports:
+      - "9093:9093"
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
 
-  # nodeexportser:
-  #   image: quay.io/prometheus/node-exporter:v1.5.0
-  #   container_name: node-exporter
-  #   volumes:
-  #     - /proc:/host/proc:ro
-  #     - /sys:/host/sys:ro
-  #     - /:/rootfs:ro
-  #   command:
-  #     - '--path.procfs=/host/proc'
-  #     - '--path.rootfs=/rootfs'
-  #     - '--path.sysfs=/host/sys'
-  #     - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
-  #   restart: unless-stopped
-  #   ports:
-  #     - "9100:9100"
-  #   networks:
-  #     - monitor-net
-  #   labels:
-  #     org.label-schema.group: "monitoring"
+  nodeexportser:
+    image: quay.io/prometheus/node-exporter:v1.5.0
+    container_name: node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
 
   cadvisor:
     image: gcr.io/google-containers/cadvisor:latest
